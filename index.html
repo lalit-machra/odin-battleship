@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Battleship</title>
+    <link href="./style.css" rel="stylesheet">
+    <script src="./game-dom.js" defer type="module"></script>
+  </head>
+  <body>
+    <h1>Battleship</h1>
+    <div class="starterOptions">
+      <label for="player">
+        Player Name:
+        <input id="player" type="text" autocomplete="off" size="15">
+      </label>
+      <label>
+        Game Mode:
+        <input type="radio" name="gameMode" checked id="pvc" value="pvc">
+        <label for="pvc">player vs computer</label>
+        <input type="radio" name="gameMode" id="pvp" disabled value="pvp">
+        <label for="pvp">player vs player</label>
+      </label>
+      <button class="gameStartBtn">Start Game</button>
+    </div>
+    <div class="gameboards">
+      <div class="player1">
+        <div class="player1Board"></div>
+        <span class="player1Name"></span>
+      </div>
+      <div class="player2">
+        <div class="player2Board"></div>
+        <span class="player2Name"></span>
+      </div>
+    </div>
+  </body>
+</html>

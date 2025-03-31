@@ -1,0 +1,70 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+h1 {
+  text-align: center;
+  color: red;
+}
+
+.starterOptions {
+  margin-top: 50px;
+  margin-bottom: 30px;
+  font-size: 18px;
+}
+
+.starterOptions > label {
+  display: block;
+  margin-left: 40%;
+  margin-right: auto;
+  margin-top: 20px;
+}
+
+.starterOptions input[type="text"] {
+  outline-style: none;
+  border: none;
+  border-bottom: 2px solid;
+  margin-left: 10px;
+  font-size: 18px;
+  padding: 0 5px;
+}
+
+.gameStartBtn {
+  margin-left: 45%;
+  margin-top: 20px;
+}
+
+.gameboards {
+  display: flex;
+  justify-content: space-evenly;
+  margin-top: 100px;
+}
+
+.player1Board, 
+.player2Board {
+  display: inline-block;
+  justify-content: center;
+  border: 1px solid;
+}
+
+.gameboards span {
+  display: block;
+  text-align: center;
+  font-size: 22px;
+  margin-top: 10px;
+}
+
+.gameboards .rowDiv {
+  display: flex;
+}
+
+.gameboards .columnDiv {
+  width: 40px;
+  height: 40px;
+  border: 1px solid;
+  display: inline-block;
+  margin-top: 0;
+  margin-bottom: 0;
+}
