@@ -34,6 +34,7 @@ function displayGameboard(player, playerDiv, playerNameSpan) {
     for (let j = 0; j < gameBoard[i].length; j++) {
       columnDiv = document.createElement("div");
       columnDiv.classList.add("columnDiv");
+      columnDiv.setAttribute('data-loc', `${i}${j}`);
       rowDiv.appendChild(columnDiv);
     }
     playerDiv.appendChild(rowDiv);
