@@ -81,3 +81,19 @@ h1 {
   margin-top: 0;
   margin-bottom: 0;
 }
+
+.gameboards .columnDiv.attacked {
+  background-color: red;
+}
+
+.gameboards .columnDiv.missed {
+  background-color: lightskyblue;
+}
+
+.gameboards .columnDiv.latest:after {
+  content: '+';
+  position: relative;
+  left: 13px;
+  top: 10px;
+  font-weight: bolder;
+}
