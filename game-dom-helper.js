@@ -12,20 +12,21 @@ function disableStartingMenu() {
   return;
 }
 
-function initializeGameBoard(playerArr) {
+function initGameBoard(playerArr) {
   let player, playerDiv, playerNameSpan;
+  let playerObjArr = [];
   for (let i = 0; i < playerArr.length; i++) {
     player = new Player(playerArr[i]);
     playerDiv = document.querySelector(`.gameboards .player${i + 1}Board`);
     playerNameSpan = document.querySelector(`.gameboards .player${i + 1}Name`);
     displayGameboard(player, playerDiv, playerNameSpan);
+    playerObjArr.push(player);
   }
-  return;
+  return playerObjArr;
 }
 
 function displayGameboard(player, playerDiv, playerNameSpan) {
   let gameBoard = player.gameBoard.board;
-  console.log(gameBoard);
   let rowDiv, columnDiv;
   for (let i = 0; i < gameBoard.length; i++) {
     rowDiv = document.createElement("div");
@@ -41,4 +42,4 @@ function displayGameboard(player, playerDiv, playerNameSpan) {
   return;
 }
 
-export { disableStartingMenu, initializeGameBoard };
+export { disableStartingMenu, initGameBoard };
