@@ -99,7 +99,7 @@ class GameBoard {
   }
 
   receiveAttack(loc) {
-    let locStr = loc[0].toString() + loc[1].toString();
+    let locStr = (typeof loc !== 'string') ? loc[0].toString() + loc[1].toString() : loc;
     if (this.hitShots.includes(locStr) || this.missedShots.includes(locStr)) {
       return null;
     } else {
