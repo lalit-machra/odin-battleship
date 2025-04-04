@@ -43,6 +43,7 @@ describe('Gameboard testing', () => {
   let gameBoard = new GameBoard(player);
   test('place the ship', () => {
     expect(gameBoard.placeShip([[0, 2], [0, 3]])).toBe(true);
+    expect(gameBoard.placeShip([[1, 2], [1, 3], [1, 4]])).toBe(false);
     expect(gameBoard.placeShip([[0, 1], [0, -3]])).toBe(false);
     expect(gameBoard.placeShip([[0, 2], [0, 3]])).toBe(false);
     expect(gameBoard.placeShip([[2, 3], [2, 4], [0, 2]])).toBe(false);   // one cell already occupied
@@ -53,6 +54,9 @@ describe('Gameboard testing', () => {
     expect(gameBoard.placeShip([[1, 5], [2, 5], [3, 5], [4, 5]])).toBe(true);
     expect(gameBoard.placeShip([[7, 6], [7, 5], [7, 4], [7, 3]])).toBe(true);
     expect(gameBoard.placeShip([[3, 8], [2, 8], [1, 8]])).toBe(true);
+    expect(gameBoard.placeShip([[0, 7], [0, 8], [0, 9]])).toBe(false);
+    expect(gameBoard.placeShip([[9, 5], [9, 6], [9, 7]])).toBe(false);
+    expect(gameBoard.placeShip([[8, 1], [8, 2]])).toBe(false);
   });
 
   test('receive attack', () => {

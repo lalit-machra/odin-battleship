@@ -31,11 +31,69 @@ function makeGameboard() {
   return gameBoard;
 }
 
+function proximityHandler(shipLocArr) {
+  let proximityArr = [];
+  let xLoc, yLoc;
+  for (let i = 0; i < shipLocArr.length; i++) {
+    xLoc = +shipLocArr[i][0];
+    yLoc = +shipLocArr[i][1];
+    if (((xLoc - 1 >= 0) && (xLoc - 1 <= 9))
+      && ((yLoc >= 0) && (yLoc <= 9))
+      && !proximityArr.includes((xLoc - 1).toString() + (yLoc).toString())) {
+        proximityArr.push((xLoc - 1).toString() + (yLoc).toString());
+    }
+    if (((xLoc + 1 >= 0) && (xLoc + 1 <= 9))
+      && ((yLoc >= 0) && (yLoc <= 9))
+      && !proximityArr.includes((xLoc + 1).toString() + (yLoc).toString())) {
+        proximityArr.push((xLoc + 1).toString() + (yLoc).toString());
+    }
+    if (((xLoc >= 0) && (xLoc <= 9))
+      && ((yLoc - 1 >= 0) && (yLoc - 1 <= 9))
+      && !proximityArr.includes((xLoc).toString() + (yLoc - 1).toString())) {
+        proximityArr.push((xLoc).toString() + (yLoc - 1).toString());
+    }
+    if (((xLoc >= 0) && (xLoc <= 9))
+      && ((yLoc + 1 >= 0) && (yLoc + 1 <= 9))
+      && !proximityArr.includes((xLoc).toString() + (yLoc + 1).toString())) {
+        proximityArr.push((xLoc).toString() + (yLoc + 1).toString());
+    }
+    if (((xLoc - 1 >= 0) && (xLoc - 1 <= 9))
+      && ((yLoc - 1 >= 0) && (yLoc - 1 <= 9))
+      && !proximityArr.includes((xLoc - 1).toString() + (yLoc - 1).toString())) {
+        proximityArr.push((xLoc - 1).toString() + (yLoc - 1).toString());
+    }
+    if (((xLoc + 1 >= 0) && (xLoc + 1 <= 9))
+      && ((yLoc + 1 >= 0) && (yLoc + 1 <= 9))
+      && !proximityArr.includes((xLoc + 1).toString() + (yLoc + 1).toString())) {
+        proximityArr.push((xLoc + 1).toString() + (yLoc + 1).toString());
+    }
+    if (((xLoc - 1 >= 0) && (xLoc - 1 <= 9))
+      && ((yLoc + 1 >= 0) && (yLoc + 1 <= 9))
+      && !proximityArr.includes((xLoc - 1).toString() + (yLoc + 1).toString())) {
+        proximityArr.push((xLoc - 1).toString() + (yLoc + 1).toString());
+    }
+    if (((xLoc + 1 >= 0) && (xLoc + 1 <= 9))
+      && ((yLoc - 1 >= 0) && (yLoc - 1 <= 9))
+      && !proximityArr.includes((xLoc + 1).toString() + (yLoc - 1).toString())) {
+        proximityArr.push((xLoc + 1).toString() + (yLoc - 1).toString());
+    }
+  }
+  // Remove any common values
+  shipLocArr.forEach((ship) => {
+    if (proximityArr.includes(ship)) {
+      let index = proximityArr.indexOf(ship);
+      proximityArr.splice(index, 1);
+    }
+  });
+  return proximityArr;
+}
+
 class GameBoard {
   constructor(playerName) {
     this.owner = playerName;
     this.board = makeGameboard();
     this.shipLocations = [];
+    this.shipProximity = [];
     this.hitShots = [];
     this.missedShots = [];
   }
@@ -48,7 +106,8 @@ class GameBoard {
       currY = locArr[i][1];
       // checking for all values to be in range 0 to 9
       if ((currX < 0 || currX > 9)
-       || (currY < 0 || currY > 9)) {
+       || (currY < 0 || currY > 9)
+       || (this.shipProximity.includes(currX.toString() + currY.toString()))) {
         return false;
       } else {
         // checking if place is empty or not
@@ -90,11 +149,15 @@ class GameBoard {
     let newShip = new Ship(locArr.length);
     let newObj = {'ship': newShip};
     let shipLocStr;
+    let shipFullLoc = [];
     for (let i = 0; i < locArr.length; i++) {
       this.board[locArr[i][0]][locArr[i][1]].push(newObj);
       shipLocStr = locArr[i][0].toString() + locArr[i][1].toString();
       this.shipLocations.push(shipLocStr);
+      shipFullLoc.push(shipLocStr);
     }
+    let proximityValues = proximityHandler(shipFullLoc);
+    proximityValues.forEach((value) => this.shipProximity.push(value));
     return true;
   }
 
