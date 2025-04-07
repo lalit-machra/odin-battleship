@@ -12,11 +12,10 @@ function disableStartingMenu() {
   return;
 }
 
-function initGameBoard(playerArr) {
+function initGameBoard(playerArr, playerObjArr) {
   let player, playerDiv, playerNameSpan;
-  let playerObjArr = [];
   for (let i = 0; i < playerArr.length; i++) {
-    player = new Player(playerArr[i]);
+    player = (playerObjArr[0] !== undefined && playerObjArr[0].name === playerArr[i]) ? playerObjArr[0] : new Player(playerArr[i]);
     playerDiv = document.querySelector(`.gameboards .player${i + 1}Board`);
     playerNameSpan = document.querySelector(`.gameboards .player${i + 1}Name`);
     displayGameboard(player, playerDiv, playerNameSpan);
@@ -25,7 +24,14 @@ function initGameBoard(playerArr) {
   return playerObjArr;
 }
 
-function displayGameboard(player, playerDiv, playerNameSpan) {
+function initGameBoardForShipPlacement(playerName, playerDiv, playerObjArr) {
+  let player = new Player(playerName);
+  displayGameboard(player, playerDiv);
+  playerObjArr.push(player);
+  return playerObjArr;
+}
+
+function displayGameboard(player, playerDiv, playerNameSpan=null) {
   let gameBoard = player.gameBoard.board;
   let rowDiv, columnDiv;
   for (let i = 0; i < gameBoard.length; i++) {
@@ -39,8 +45,8 @@ function displayGameboard(player, playerDiv, playerNameSpan) {
     }
     playerDiv.appendChild(rowDiv);
   }
-  playerNameSpan.innerText = player.name;
+  if (playerNameSpan) playerNameSpan.innerText = player.name;
   return;
 }
 
-export { disableStartingMenu, initGameBoard };
+export { disableStartingMenu, initGameBoard, initGameBoardForShipPlacement };

@@ -43,23 +43,45 @@ h1 {
   color: blue;
 }
 
-.gameboards {
+.gameboards,
+.placeAllShips {
   display: flex;
   justify-content: space-evenly;
   margin-top: 50px;
 }
 
-.player1Board, 
+.placeAllShips .ships {
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+  flex-direction: column;
+  width: 400px;
+  background-color: lightsteelblue;
+}
+
+.ships img {
+  width: 120px;
+  height: 100px;
+}
+
+.player1Board,
 .player2Board {
   display: inline-block;
   justify-content: center;
-  border: 1px solid;
 }
 
 .player1Board.disabled,
 .player2Board.disabled {
   pointer-events: none;
   opacity: 0.4; 
+}
+
+.player1Board {
+  border: 4px solid lightsalmon;
+}
+
+.player2Board {
+  border: 4px solid lightgreen;
 }
 
 .gameboards span {
@@ -69,17 +91,23 @@ h1 {
   margin-top: 10px;
 }
 
-.gameboards .rowDiv {
+.gameboards .rowDiv,
+.placeAllShips .rowDiv {
   display: flex;
 }
 
-.gameboards .columnDiv {
+.gameboards .columnDiv,
+.placeAllShips .columnDiv {
   width: 40px;
   height: 40px;
   border: 1px solid;
   display: inline-block;
   margin-top: 0;
   margin-bottom: 0;
+}
+
+.placeAllShips .columnDiv.hovered {
+  background-color: aliceblue;
 }
 
 .gameboards .columnDiv.attacked {

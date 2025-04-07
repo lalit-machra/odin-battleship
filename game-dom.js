@@ -1,16 +1,18 @@
-import { disableStartingMenu, initGameBoard } from "./game-dom-helper.js";
+import { disableStartingMenu, initGameBoard, initGameBoardForShipPlacement } from "./game-dom-helper.js";
 
 const player = document.querySelector("#player");
 const gameMode = document.querySelector('input[type="radio"]:checked');
 const gameStartBtn = document.querySelector(".gameStartBtn");
 let playerArr = [];
-gameStartBtn.addEventListener("click", () => {
+let playerObjArr = [];
+gameStartBtn.addEventListener("click", async () => {
   disableStartingMenu();
   playerArr.push(player.value);
+  await placeShips(playerArr);
   if (gameMode.value === 'pvc') {
     playerArr.push("Computer");
   }
-  let playerObjArr = initGameBoard(playerArr);
+  playerObjArr = initGameBoard(playerArr, playerObjArr);
   handleTurns(playerObjArr);
 });
 
@@ -94,4 +96,53 @@ function handleAttack(attackPos, oppGameboard, oppGameBoardObj) {
     attackCell.classList.add('latest');
     return true;
   }
+}
+
+async function placeShips(playerArr) {
+  const placeAllShips = document.querySelector('.placeAllShips');
+  const shipsDiv = document.createElement("div");
+  shipsDiv.classList.add("ships");
+  const player1Board = document.createElement("div");
+  player1Board.classList.add("player1Board");
+  
+  placeAllShips.appendChild(shipsDiv);
+  placeAllShips.appendChild(player1Board);
+
+  playerObjArr = initGameBoardForShipPlacement(playerArr[0], player1Board, playerObjArr);
+
+  const columnDivs = document.querySelectorAll('.placeAllShips .columnDiv');
+  columnDivs.forEach((column) => {
+    column.addEventListener('dragover', (ev) => {
+      ev.preventDefault();
+      ev.dataTransfer.dropEffect = "copy";
+    });
+    column.addEventListener('dragenter', (ev) => {
+      column.classList.add('hovered');
+    })
+    column.addEventListener('dragleave', (ev) => {
+      column.classList.remove('hovered');
+    })
+    column.addEventListener('drop', (ev) => {
+      ev.preventDefault();
+    })
+  });
+
+  const img1 = document.createElement("img")
+  img1.src = './img/battleship1.png';
+  const img2 = document.createElement("img")
+  img2.src = './img/battleship2.png';
+  const img3 = document.createElement("img")
+  img3.src = './img/battleship3.png';
+  const img4 = document.createElement("img")
+  img4.src = './img/battleship4.png';
+  shipsDiv.appendChild(img1);
+  shipsDiv.appendChild(img2);
+  shipsDiv.appendChild(img3);
+  shipsDiv.appendChild(img4);
+
+  const launchGameBtn = document.createElement('button');
+  launchGameBtn.classList.add("launchGameBtn");
+  return new Promise((resolve) => {
+    launchGameBtn.onclick = () => resolve();
+  });
 }
