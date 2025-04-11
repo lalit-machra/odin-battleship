@@ -198,4 +198,4 @@ class Player {
   }
 }
 
-export { Ship, GameBoard, Player }
+export { Ship, GameBoard, Player, proximityHandler }
