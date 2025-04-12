@@ -49,4 +49,89 @@ function displayGameboard(player, playerDiv, playerNameSpan=null) {
   return;
 }
 
-export { disableStartingMenu, initGameBoard, initGameBoardForShipPlacement };
+function determineShipLoc(loc, length) {
+  let locX, locY;
+  let locArr = [];
+  if (length == 2) {
+    let newLoc;
+    locX = +loc[0];
+    locY = +loc[1];
+    if (locY - 1 >= 0 && locY - 1 <= 9) {   // 1 cell on left of loc
+      newLoc = (locX).toString() + (locY - 1).toString();
+      locArr.push(newLoc);
+      locArr.push(loc);
+    } else {   // 1 cell on right of loc
+      newLoc = (locX).toString() + (locY + 1).toString();
+      locArr.push(loc);
+      locArr.push(newLoc);
+    }
+  } else if (length == 3) {
+    let newLoc1, newLoc2;
+    locX = +loc[0];
+    locY = +loc[1];
+    if ((locY - 1 >= 0 && locY - 1 <= 9)
+      && (locY + 1 >= 0 && locY + 1 <= 9)) {   // 1 cell on left and 1 on right of loc
+        newLoc1 = (locX).toString() + (locY - 1).toString();
+        newLoc2 = (locX).toString() + (locY + 1).toString();
+        locArr.push(newLoc1);
+        locArr.push(loc);
+        locArr.push(newLoc2);
+    } else if (locY - 1 >= 0 && locY - 1 <= 9) {   // both cells on left of loc
+        newLoc1 = (locX).toString() + (locY - 1).toString();
+        newLoc2 = (locX).toString() + (locY - 2).toString();
+        locArr.push(newLoc2);
+        locArr.push(newLoc1);
+        locArr.push(loc);
+    } else if (locY + 1 >= 0 && locY + 1 <= 9) {  // both cells on right of loc
+        newLoc1 = (locX).toString() + (locY + 1).toString();
+        newLoc2 = (locX).toString() + (locY + 2).toString();
+        locArr.push(loc);
+        locArr.push(newLoc1);
+        locArr.push(newLoc2);
+    }
+  } else if (length == 4) {
+    let newLoc1, newLoc2, newLoc3;
+    locX = +loc[0];
+    locY = +loc[1];
+    if ((locY - 1 >= 0 && locY - 1 <= 9)
+      && (locY - 2 >= 0 && locY - 2 <= 9)
+      && (locY + 1 >= 0 && locY + 1 <= 9)) {   // 2 cells on left and 1 on right of loc
+        newLoc1 = (locX).toString() + (locY - 1).toString();
+        newLoc2 = (locX).toString() + (locY - 2).toString();
+        newLoc3 = (locX).toString() + (locY + 1).toString();
+        locArr.push(newLoc2);
+        locArr.push(newLoc1);
+        locArr.push(loc);
+        locArr.push(newLoc3);
+    } else if ((locY - 1 >= 0 && locY - 1 <= 9)
+      && (locY + 1 >= 0 && locY + 1 <= 9)) {   // 1 cell on left and 2 on right of loc
+        newLoc1 = (locX).toString() + (locY - 1).toString();
+        newLoc2 = (locX).toString() + (locY + 2).toString();
+        newLoc3 = (locX).toString() + (locY + 1).toString();
+        locArr.push(newLoc1);
+        locArr.push(loc);
+        locArr.push(newLoc3);
+        locArr.push(newLoc2);
+    } else if (locY + 1 >= 0 && locY + 1 <= 9) {   // all 3 cells on right of loc
+        newLoc1 = (locX).toString() + (locY + 1).toString();
+        newLoc2 = (locX).toString() + (locY + 2).toString();
+        newLoc3 = (locX).toString() + (locY + 3).toString();
+        locArr.push(loc);
+        locArr.push(newLoc1);
+        locArr.push(newLoc2);
+        locArr.push(newLoc3);
+    } else if ((locY - 1 >= 0 && locY - 1 <= 9)
+      && (locY - 2 >= 0 && locY - 2 <= 9)) {   // all 3 cells on left of loc
+      newLoc1 = (locX).toString() + (locY - 1).toString();
+      newLoc2 = (locX).toString() + (locY - 2).toString();
+      newLoc3 = (locX).toString() + (locY - 3).toString();
+      locArr.push(newLoc3);
+      locArr.push(newLoc2);
+      locArr.push(newLoc1);
+      locArr.push(loc);
+    }
+  }
+  return locArr;
+}
+
+export { disableStartingMenu, initGameBoard, initGameBoardForShipPlacement, determineShipLoc };

@@ -1,4 +1,4 @@
-import { disableStartingMenu, initGameBoard, initGameBoardForShipPlacement } from "./game-dom-helper.js";
+import { disableStartingMenu, initGameBoard, initGameBoardForShipPlacement, determineShipLoc } from "./game-dom-helper.js";
 import { proximityHandler } from "./game-logic.js";
 
 const player = document.querySelector("#player");
@@ -22,7 +22,7 @@ let compHitTargets = [];
 let compNextTargets = [];
 let sameAxisNext = [];
 let bothSidesTargetPresent;
-let proximityShipLocs = []
+let proximityShipLocs = [];
 async function handleTurns(playerObjArr, turn=1, gameEnd=false) {
   if (gameEnd === true) {
     return;
@@ -270,32 +270,108 @@ async function placeShips(playerArr) {
   placeAllShips.appendChild(player1Board);
 
   playerObjArr = initGameBoardForShipPlacement(playerArr[0], player1Board, playerObjArr);
+  let playerGameBoard = playerObjArr[0].gameBoard;
 
+  let shipLen;
   const columnDivs = document.querySelectorAll('.placeAllShips .columnDiv');
-  columnDivs.forEach((column) => {
-    column.addEventListener('dragover', (ev) => {
-      ev.preventDefault();
-      ev.dataTransfer.dropEffect = "copy";
+  columnDivs.forEach((cell) => {
+    let shipLocArray = [];
+
+    cell.addEventListener('dragstart', (e) => {
+      e.dataTransfer.dropEffect = "move";
     });
-    column.addEventListener('dragenter', (ev) => {
-      column.classList.add('hovered');
-    })
-    column.addEventListener('dragleave', (ev) => {
-      column.classList.remove('hovered');
-    })
-    column.addEventListener('drop', (ev) => {
-      ev.preventDefault();
-    })
+
+    cell.addEventListener('dragenter', (e) => {
+      let shipLength = shipLen;
+      let shipLoc = cell.getAttribute('data-loc');
+      shipLocArray = determineShipLoc(shipLoc, shipLength);
+      shipLocArray.forEach((loc) => {
+        setTimeout(() => {
+          let eachCell = document.querySelector(`[data-loc="${loc}"]`);
+          if (!eachCell.classList.contains('hovered')) eachCell.classList.add('hovered');
+        }, 1);
+      });
+    });
+
+    cell.addEventListener('dragleave', () => {
+      shipLocArray.forEach((loc) => {
+        let eachCell = document.querySelector(`[data-loc="${loc}"]`);
+        if (eachCell.classList.contains('hovered')) eachCell.classList.remove('hovered');
+      });
+    });
+
+    cell.addEventListener('dragover', (e) => {
+      e.preventDefault();
+    });
+
+    
+    cell.addEventListener('drop', (e) => {
+      e.preventDefault();
+      let shipClass = e.dataTransfer.getData("text");
+      let reqShip = document.querySelector(`.${shipClass}`);
+      
+      if (playerGameBoard.placeShip(shipLocArray)) {
+        reqShip.setAttribute("draggable", false);
+        for (let i = 0; i < shipLocArray.length; i++) {
+          let cell = document.querySelector(`[data-loc="${shipLocArray[i]}"]`);
+          cell.classList.add('shipPlaced');
+        }
+        let startingCell = document.querySelector(`[data-loc="${shipLocArray[0]}"]`);
+        startingCell.appendChild(reqShip);
+        let neighbours = proximityHandler(shipLocArray);
+        for (let j = 0; j < neighbours.length; j++) {
+          let neighbourCell = document.querySelector(`[data-loc="${neighbours[j]}"]`);
+          neighbourCell.classList.add("neighbour");
+        }
+        let allShipPlacedCells = document.querySelectorAll('.shipPlaced');
+        if (allShipPlacedCells.length === 12) {
+          resolve();
+        }
+      } else {
+        for (let i = 0; i < shipLocArray.length; i++) {
+          let cell = document.querySelector(`[data-loc="${shipLocArray[i]}"]`);
+          if (cell.classList.contains('hovered')) cell.classList.remove('hovered');
+        }
+      }
+    });
   });
 
   const img1 = document.createElement("img")
   img1.src = './img/battleship1.png';
+  img1.classList.add('battleship1');
+  img1.setAttribute('data-length', 3);
+  img1.addEventListener('dragstart', (e) => {
+    shipLen = img1.getAttribute('data-length');
+    e.dataTransfer.setData("text", img1.classList[0]);
+  });
+
   const img2 = document.createElement("img")
   img2.src = './img/battleship2.png';
+  img2.classList.add('battleship2');
+  img2.setAttribute('data-length', 4);
+  img2.addEventListener('dragstart', (e) => {
+    shipLen = img2.getAttribute('data-length');
+    e.dataTransfer.setData("text", img2.classList[0]);
+  });
+
   const img3 = document.createElement("img")
   img3.src = './img/battleship3.png';
+  img3.classList.add('battleship3');
+  img3.setAttribute('data-length', 3);
+  img3.addEventListener('dragstart', (e) => {
+    shipLen = img3.getAttribute('data-length');
+    e.dataTransfer.setData("text", img3.classList[0]);
+  });
+
   const img4 = document.createElement("img")
   img4.src = './img/battleship4.png';
+  img4.classList.add('battleship4');
+  img4.setAttribute('data-length', 2);
+  img4.addEventListener('dragstart', (e) => {
+    shipLen = img4.getAttribute('data-length');
+    e.dataTransfer.setData("text", img4.classList[0]);
+  });
+
   shipsDiv.appendChild(img1);
   shipsDiv.appendChild(img2);
   shipsDiv.appendChild(img3);

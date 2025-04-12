@@ -59,10 +59,6 @@ h1 {
   background-color: lightsteelblue;
 }
 
-.ships img {
-  width: 120px;
-  height: 100px;
-}
 
 .player1Board,
 .player2Board {
@@ -106,8 +102,24 @@ h1 {
   margin-bottom: 0;
 }
 
-.placeAllShips .columnDiv.hovered {
-  background-color: aliceblue;
+.hovered {
+  background-color: rgb(246, 228, 221);
+}
+
+.columnDiv.shipPlaced {
+  background-color: rgb(200, 223, 221);
+}
+
+.columnDiv.neighbour {
+  background-color: silver;
+}
+
+.columnDiv.neighbour:after {
+  content: '*';
+  position: relative;
+  left: 13px;
+  top: 10px;
+  font-weight: bolder;
 }
 
 .gameboards .columnDiv.attacked {
@@ -124,4 +136,48 @@ h1 {
   left: 13px;
   top: 10px;
   font-weight: bolder;
+}
+
+.battleship1 {
+  width: 120px;
+  height: 100px;
+}
+
+.battleship2 {
+  width: 150px;
+  height: 75px;
+}
+
+.battleship3 {
+  width: 120px;
+  height: 100px;
+}
+
+.battleship4 {
+  width: 85px;
+  height: 120px;
+}
+
+.rowDiv {
+  position: relative;
+}
+
+.columnDiv .battleship1 {
+  position: absolute;
+  top: -32px;
+}
+
+.columnDiv .battleship2 {
+  position: absolute;
+  top: -17px;
+}
+
+.columnDiv .battleship3 {
+  position: absolute;
+  top: -23px;
+}
+
+.columnDiv .battleship4 {
+  position: absolute;
+  top: -37px;
 }
