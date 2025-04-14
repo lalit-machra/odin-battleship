@@ -59,6 +59,12 @@ h1 {
   background-color: lightsteelblue;
 }
 
+.placeAllShips .launchGameBtn {
+  width: 150px;
+  height: 100px;
+  margin-top: 150px;
+  font-size: 18px;
+}
 
 .player1Board,
 .player2Board {

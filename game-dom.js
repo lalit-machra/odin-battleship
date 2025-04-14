@@ -9,11 +9,12 @@ let playerObjArr = [];
 gameStartBtn.addEventListener("click", async () => {
   disableStartingMenu();
   playerArr.push(player.value);
-  await placeShips(playerArr);
+  await playerPlaceShips(playerArr);
   if (gameMode.value === 'pvc') {
     playerArr.push("Computer");
   }
   playerObjArr = initGameBoard(playerArr, playerObjArr);
+  await computerPlaceShips(playerObjArr);
   handleTurns(playerObjArr);
 });
 
@@ -39,13 +40,15 @@ async function handleTurns(playerObjArr, turn=1, gameEnd=false) {
       turnInfo.innerText = `${playerObjArr[0].name}'s turn`;
       if (player2Board.classList.contains("disabled")) { player2Board.classList.remove("disabled"); }
       player1Board.classList.add("disabled");
-      await handleRound(player2Board, playerObjArr[1].gameBoard);
+      let computerGameboard = playerObjArr[1].gameBoard;
+      await handleRound(player2Board, computerGameboard);
     // }
   } else {
     // if (playerObjArr[1].gameBoard.allShipsSunk() === true) {
     //   console.log("all ships of player2 sank");
     //   gameEnd = true;
     // } else {
+      let playerGameboard = playerObjArr[0].gameBoard;
       turnInfo.innerText = `${playerObjArr[1].name}'s turn`;
       if (player1Board.classList.contains("disabled")) { player1Board.classList.remove("disabled"); }
       player2Board.classList.add("disabled");
@@ -84,7 +87,7 @@ async function handleTurns(playerObjArr, turn=1, gameEnd=false) {
           if (compHitTargets.length === 2) {
             diffX = xIndex0 - +compHitTargets[1][0];
             diffY = yIndex0 - +compHitTargets[1][0];
-            newPos = (+compHitTargets[i][0] - diffX).toString() + (+compHitTargets[i][1] - diffY).toString();
+            newPos = (+compHitTargets[1][0] - diffX).toString() + (+compHitTargets[1][1] - diffY).toString();
             if (!proximityShipLocs.includes(newPos)) {
               sameAxisNext.push(newPos);
               compNextTargets.push(newPos);
@@ -178,9 +181,9 @@ async function handleTurns(playerObjArr, turn=1, gameEnd=false) {
           }
         }
 
-        await handleComputerRound(player1Board, playerObjArr[0].gameBoard, compHitTargets, compNextTargets, proximityShipLocs);
+        await handleComputerRound(player1Board, playerGameboard, compHitTargets, compNextTargets, proximityShipLocs);
       } else {
-        await handleRound(player1Board, playerObjArr[0].gameBoard);
+        await handleRound(player1Board, playerGameboard);
       }
     // }
   }
@@ -190,11 +193,15 @@ async function handleTurns(playerObjArr, turn=1, gameEnd=false) {
 
 async function handleRound(oppGameboard, oppGameBoardObj) {
   let attackPos;
+  let clicked = false;
   return new Promise((resolve) => oppGameboard.onclick = (e) => {
-    attackPos = e.target.getAttribute("data-loc");
-    if (attackPos !== null) {
-      if (handleAttack(attackPos, oppGameboard, oppGameBoardObj) !== null) {
-        resolve();
+    if (!clicked) {
+      attackPos = e.target.getAttribute("data-loc");
+      if (attackPos !== null) {
+        if (handleAttack(attackPos, oppGameboard, oppGameBoardObj) !== null) {
+          clicked = true;
+          setTimeout(() => resolve(), 500);
+        }
       }
     }
   });
@@ -229,7 +236,7 @@ async function handleComputerRound(oppGameboard, oppGameBoardObj, hitTargets, ne
         }
         hitTargets.push(attackPos);
       }
-      resolve();
+      setTimeout(() => resolve(), 500);
     }, 1500);
   });
 }
@@ -259,7 +266,7 @@ function handleAttack(attackPos, oppGameboard, oppGameBoardObj) {
   }
 }
 
-async function placeShips(playerArr) {
+async function playerPlaceShips(playerArr) {
   const placeAllShips = document.querySelector('.placeAllShips');
   const shipsDiv = document.createElement("div");
   shipsDiv.classList.add("ships");
@@ -268,6 +275,11 @@ async function placeShips(playerArr) {
   
   placeAllShips.appendChild(shipsDiv);
   placeAllShips.appendChild(player1Board);
+  const launchGameBtn = document.createElement('button');
+  launchGameBtn.innerText = 'Launch Game';
+  launchGameBtn.classList.add("launchGameBtn");
+  launchGameBtn.setAttribute("disabled", true);
+  placeAllShips.appendChild(launchGameBtn);
 
   playerObjArr = initGameBoardForShipPlacement(playerArr[0], player1Board, playerObjArr);
   let playerGameBoard = playerObjArr[0].gameBoard;
@@ -325,7 +337,8 @@ async function placeShips(playerArr) {
         }
         let allShipPlacedCells = document.querySelectorAll('.shipPlaced');
         if (allShipPlacedCells.length === 12) {
-          resolve();
+          launchGameBtn.removeAttribute("disabled");
+          return new Promise((resolve) => resolve());
         }
       } else {
         for (let i = 0; i < shipLocArray.length; i++) {
@@ -377,9 +390,27 @@ async function placeShips(playerArr) {
   shipsDiv.appendChild(img3);
   shipsDiv.appendChild(img4);
 
-  const launchGameBtn = document.createElement('button');
-  launchGameBtn.classList.add("launchGameBtn");
   return new Promise((resolve) => {
     launchGameBtn.onclick = () => resolve();
   });
+}
+
+async function computerPlaceShips(playerObjArr) {
+  let computerArr = playerObjArr[1];
+  let shipLengths = [3, 4 , 3, 2];
+  let shipLocation, shipPlace, posX, posY, pos;
+  shipLengths.forEach((length) => {
+    do {
+      do {
+        posX = Math.floor((Math.random() * 10));
+        posY = Math.floor((Math.random() * 10));
+        pos = posX.toString() + posY.toString();
+      } while ((posX < 0 || posX > 9) || (posY < 0 || posY > 9))
+      shipLocation = determineShipLoc(pos, length);
+      // console.log(`length: ${length}`)
+      shipPlace = computerArr.gameBoard.placeShip(shipLocation);
+    } while(shipLocation === null || shipPlace === false)
+  });
+  console.log(`Ship Position: ${computerArr.gameBoard.shipLocations}`);
+  return new Promise((resolve) => resolve());
 }

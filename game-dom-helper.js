@@ -15,36 +15,52 @@ function disableStartingMenu() {
 function initGameBoard(playerArr, playerObjArr) {
   let player, playerDiv, playerNameSpan;
   for (let i = 0; i < playerArr.length; i++) {
-    player = (playerObjArr[0] !== undefined && playerObjArr[0].name === playerArr[i]) ? playerObjArr[0] : new Player(playerArr[i]);
+    if (playerObjArr[0] !== undefined && playerObjArr[0].name === playerArr[i]) {
+      player = playerObjArr[0];
+    } else {
+      player = new Player(playerArr[i]);
+      playerObjArr.push(player);
+    }
     playerDiv = document.querySelector(`.gameboards .player${i + 1}Board`);
     playerNameSpan = document.querySelector(`.gameboards .player${i + 1}Name`);
-    displayGameboard(player, playerDiv, playerNameSpan);
-    playerObjArr.push(player);
+    displayGameboard(player, playerDiv, true, playerNameSpan);
   }
   return playerObjArr;
 }
 
 function initGameBoardForShipPlacement(playerName, playerDiv, playerObjArr) {
   let player = new Player(playerName);
-  displayGameboard(player, playerDiv);
+  displayGameboard(player, playerDiv, false);
   playerObjArr.push(player);
   return playerObjArr;
 }
 
-function displayGameboard(player, playerDiv, playerNameSpan=null) {
+function displayGameboard(player, playerDiv, playerShipsPlaced, playerNameSpan=null) {
   let gameBoard = player.gameBoard.board;
   let rowDiv, columnDiv;
-  for (let i = 0; i < gameBoard.length; i++) {
-    rowDiv = document.createElement("div");
-    rowDiv.classList.add("rowDiv");
-    for (let j = 0; j < gameBoard[i].length; j++) {
-      columnDiv = document.createElement("div");
-      columnDiv.classList.add("columnDiv");
-      columnDiv.setAttribute('data-loc', `${i}${j}`);
-      rowDiv.appendChild(columnDiv);
+  if (playerShipsPlaced && player.name !== 'Computer') {
+    let placeAllShips = document.querySelector(".placeAllShips");
+    let player1Board = document.querySelector(".placeAllShips .player1Board");
+    playerDiv.innerHTML = player1Board.innerHTML;
+    placeAllShips.innerHTML = '';
+    let neighbours = playerDiv.querySelectorAll('.neighbour');
+    neighbours.forEach((neighbour) => {
+      neighbour.classList.remove('neighbour');
+    })
+  } else {
+    for (let i = 0; i < gameBoard.length; i++) {
+      rowDiv = document.createElement("div");
+      rowDiv.classList.add("rowDiv");
+      for (let j = 0; j < gameBoard[i].length; j++) {
+        columnDiv = document.createElement("div");
+        columnDiv.classList.add("columnDiv");
+        columnDiv.setAttribute('data-loc', `${i}${j}`);
+        rowDiv.appendChild(columnDiv);
+      }
+      playerDiv.appendChild(rowDiv);
     }
-    playerDiv.appendChild(rowDiv);
   }
+  
   if (playerNameSpan) playerNameSpan.innerText = player.name;
   return;
 }
@@ -131,7 +147,8 @@ function determineShipLoc(loc, length) {
       locArr.push(loc);
     }
   }
-  return locArr;
+  if (locArr.length !== 0) return locArr;
+  else return null;
 }
 
 export { disableStartingMenu, initGameBoard, initGameBoardForShipPlacement, determineShipLoc };

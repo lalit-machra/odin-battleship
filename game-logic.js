@@ -167,7 +167,7 @@ class GameBoard {
       return null;
     } else {
       // ship is hit
-      if (this.board[loc[0]][loc[1]].length !== 0) {
+      if (this.board[locStr[0]][locStr[1]].length !== 0) {
         this.hitShots.push(locStr);
         let hitShip = this.board[loc[0]][loc[1]][0]["ship"];
         hitShip.hit();
