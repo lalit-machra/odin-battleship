@@ -41,7 +41,7 @@ async function handleTurns(playerObjArr, turn=1, gameEnd=false) {
       if (player2Board.classList.contains("disabled")) { player2Board.classList.remove("disabled"); }
       player1Board.classList.add("disabled");
       let computerGameboard = playerObjArr[1].gameBoard;
-      await handleRound(player2Board, computerGameboard);
+      await handlePlayerRound(player2Board, computerGameboard);
     // }
   } else {
     // if (playerObjArr[1].gameBoard.allShipsSunk() === true) {
@@ -53,22 +53,6 @@ async function handleTurns(playerObjArr, turn=1, gameEnd=false) {
       if (player1Board.classList.contains("disabled")) { player1Board.classList.remove("disabled"); }
       player2Board.classList.add("disabled");
       if (gameMode.value === 'pvc') {
-        let shipSunkStatus;
-        if (compHitTargets.length !== 0) {
-          shipSunkStatus = playerGameboard.board[+compHitTargets[0][0]][+compHitTargets[0][1]][0]["ship"].sunk;
-          if (shipSunkStatus) {
-            proximityShipLocs.push(proximityHandler(compHitTargets));
-            let sunkShipCell;
-            for (let i = 0; i < compHitTargets.length; i++) {
-              sunkShipCell = player1Board.querySelector(`[data-loc="${compHitTargets[i]}"]`);
-              if (sunkShipCell.childElementCount === 1) sunkShipCell.innerHTML = '';
-              sunkShipCell.classList.add("shipSunkCell");
-            }
-            compHitTargets = [];
-            compNextTargets = [];
-            sameAxisNext = [];
-          }
-        }
         // Add all valid neighbours (Level1) to nextTargets
         if (compHitTargets.length === 1 && compNextTargets.length === 0) {
           let xHit = +compHitTargets[0][0];
@@ -99,7 +83,6 @@ async function handleTurns(playerObjArr, turn=1, gameEnd=false) {
         if (compHitTargets.length > 1 && compNextTargets.length === 0 && sameAxisNext.length === 0) {
           let xIndex0 = +compHitTargets[0][0];
           let yIndex0 = +compHitTargets[0][1];
-          shipSunkStatus = playerObjArr[0].gameBoard.board[xIndex0][yIndex0][0]["ship"].sunk;
           let diffX, diffY, newPos;
           if (compHitTargets.length === 2) {
             diffX = xIndex0 - +compHitTargets[1][0];
@@ -130,7 +113,6 @@ async function handleTurns(playerObjArr, turn=1, gameEnd=false) {
           }
         } else if (compNextTargets.length === 0 && sameAxisNext.length !== 0) {
           // Continue adding elements which are along same axis as long as they keep hitting the ship
-          console.log("hello");
           let diffX, diffY, newPos;
           if (bothSidesTargetPresent === false) {
             let lastX = +sameAxisNext[sameAxisNext.length - 1][0];
@@ -151,8 +133,6 @@ async function handleTurns(playerObjArr, turn=1, gameEnd=false) {
                   newPos = (lastX + 1).toString() + (lastY).toString();
                 }
               }
-              console.log(compHitTargets);
-              console.log(newPos);
               if (!proximityShipLocs.includes(newPos)) {
                 sameAxisNext.push(newPos);
                 compNextTargets.push(newPos);
@@ -189,7 +169,7 @@ async function handleTurns(playerObjArr, turn=1, gameEnd=false) {
 
         await handleComputerRound(player1Board, playerGameboard, compHitTargets, compNextTargets, proximityShipLocs);
       } else {
-        await handleRound(player1Board, playerGameboard);
+        await handlePlayerRound(player1Board, playerGameboard);
       }
     // }
   }
@@ -197,15 +177,29 @@ async function handleTurns(playerObjArr, turn=1, gameEnd=false) {
   handleTurns(playerObjArr, turn, gameEnd);
 }
 
-async function handleRound(oppGameboard, oppGameBoardObj) {
-  let attackPos;
+let playerHitTargets = [];
+async function handlePlayerRound(oppGameboard, oppGameBoardObj) {
+  let attackPos, shipSunkStatus;
   let clicked = false;
   return new Promise((resolve) => oppGameboard.onclick = (e) => {
     if (!clicked) {
       attackPos = e.target.getAttribute("data-loc");
       if (attackPos !== null) {
-        if (handleAttack(attackPos, oppGameboard, oppGameBoardObj) !== null) {
+        let handleattack = handleAttack(attackPos, oppGameboard, oppGameBoardObj);
+        if (handleattack !== null) {
           clicked = true;
+          if (handleattack === true) {
+            playerHitTargets.push(attackPos);
+            shipSunkStatus = oppGameBoardObj.board[+playerHitTargets[0][0]][+playerHitTargets[0][1]][0]["ship"].sunk;
+            if (shipSunkStatus) {
+              let sunkShipCell;
+              for (let i = 0; i < playerHitTargets.length; i++) {
+                sunkShipCell = oppGameboard.querySelector(`[data-loc="${playerHitTargets[i]}"]`);
+                sunkShipCell.classList.add("shipSunkCell");
+              }
+              playerHitTargets = [];
+            }
+          }
           setTimeout(() => resolve(), 500);
         }
       }
@@ -223,6 +217,8 @@ async function handleComputerRound(oppGameboard, oppGameBoardObj, hitTargets, ne
   return new Promise((resolve) => {
     setTimeout(() => {
       currAttack = handleAttack(attackPos, oppGameboard, oppGameBoardObj);
+      console.log(attackPos);
+      console.log(proximityShipLocs);
       while (currAttack === null || proximityShipLocs.includes(attackPos)) {
         attackPos = Math.floor(10 * Math.random()).toString() + Math.floor(10 * Math.random()).toString();  // new attackPos
         currAttack = handleAttack(attackPos, oppGameboard, oppGameBoardObj);
@@ -241,6 +237,22 @@ async function handleComputerRound(oppGameboard, oppGameBoardObj, hitTargets, ne
           }
         }
         hitTargets.push(attackPos);
+        let shipSunkStatus;
+        shipSunkStatus = oppGameBoardObj.board[+hitTargets[0][0]][+hitTargets[0][1]][0]["ship"].sunk;
+        if (shipSunkStatus === true) {
+          proximityHandler(hitTargets).forEach((hit) => {
+            if (!proximityShipLocs.includes(hit)) proximityShipLocs.push(hit);
+          });
+          let sunkShipCell;
+          for (let i = 0; i < hitTargets.length; i++) {
+            sunkShipCell = oppGameboard.querySelector(`[data-loc="${hitTargets[i]}"]`);
+            if (sunkShipCell.childElementCount === 1) sunkShipCell.innerHTML = '';
+            sunkShipCell.classList.add("shipSunkCell");
+          }
+          hitTargets.splice(0, hitTargets.length);
+          nextTargets.splice(0, nextTargets.length);
+          sameAxisNext.splice(0, sameAxisNext.length);
+        }
       }
       setTimeout(() => resolve(), 500);
     }, 1500);
