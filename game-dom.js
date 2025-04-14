@@ -53,20 +53,26 @@ async function handleTurns(playerObjArr, turn=1, gameEnd=false) {
       if (player1Board.classList.contains("disabled")) { player1Board.classList.remove("disabled"); }
       player2Board.classList.add("disabled");
       if (gameMode.value === 'pvc') {
+        let shipSunkStatus;
+        if (compHitTargets.length !== 0) {
+          shipSunkStatus = playerGameboard.board[+compHitTargets[0][0]][+compHitTargets[0][1]][0]["ship"].sunk;
+          if (shipSunkStatus) {
+            proximityShipLocs.push(proximityHandler(compHitTargets));
+            let sunkShipCell;
+            for (let i = 0; i < compHitTargets.length; i++) {
+              sunkShipCell = player1Board.querySelector(`[data-loc="${compHitTargets[i]}"]`);
+              if (sunkShipCell.childElementCount === 1) sunkShipCell.innerHTML = '';
+              sunkShipCell.classList.add("shipSunkCell");
+            }
+            compHitTargets = [];
+            compNextTargets = [];
+            sameAxisNext = [];
+          }
+        }
         // Add all valid neighbours (Level1) to nextTargets
         if (compHitTargets.length === 1 && compNextTargets.length === 0) {
           let xHit = +compHitTargets[0][0];
           let yHit = +compHitTargets[0][1];
-          if ((xHit - 1 >= 0 && xHit - 1 <= 9)
-            && (yHit >= 0 && yHit <= 9)
-            && !proximityShipLocs.includes((xHit - 1).toString() + (yHit).toString())) {
-              compNextTargets.push((xHit - 1).toString() + (yHit).toString());
-          }
-          if ((xHit + 1 >= 0 && xHit + 1 <= 9)
-            && (yHit >= 0 && yHit <= 9)
-            && !proximityShipLocs.includes((xHit + 1).toString() + (yHit).toString())) {
-              compNextTargets.push((xHit + 1).toString() + (yHit).toString());
-          }
           if ((xHit >= 0 && xHit <= 9)
             && (yHit - 1 >= 0 && yHit - 1 <= 9)
             && !proximityShipLocs.includes((xHit).toString() + (yHit - 1).toString())) {
@@ -77,106 +83,106 @@ async function handleTurns(playerObjArr, turn=1, gameEnd=false) {
             && !proximityShipLocs.includes((xHit).toString() + (yHit + 1).toString())) {
               compNextTargets.push((xHit).toString() + (yHit + 1).toString());
           }
+          if ((xHit - 1 >= 0 && xHit - 1 <= 9)
+            && (yHit >= 0 && yHit <= 9)
+            && !proximityShipLocs.includes((xHit - 1).toString() + (yHit).toString())) {
+              compNextTargets.push((xHit - 1).toString() + (yHit).toString());
+          }
+          if ((xHit + 1 >= 0 && xHit + 1 <= 9)
+            && (yHit >= 0 && yHit <= 9)
+            && !proximityShipLocs.includes((xHit + 1).toString() + (yHit).toString())) {
+              compNextTargets.push((xHit + 1).toString() + (yHit).toString());
+          }
         }
 
         // Add next elements that are in same axis as previously hit targets in Level1
         if (compHitTargets.length > 1 && compNextTargets.length === 0 && sameAxisNext.length === 0) {
           let xIndex0 = +compHitTargets[0][0];
           let yIndex0 = +compHitTargets[0][1];
+          shipSunkStatus = playerObjArr[0].gameBoard.board[xIndex0][yIndex0][0]["ship"].sunk;
           let diffX, diffY, newPos;
           if (compHitTargets.length === 2) {
             diffX = xIndex0 - +compHitTargets[1][0];
-            diffY = yIndex0 - +compHitTargets[1][0];
+            diffY = yIndex0 - +compHitTargets[1][1];
             newPos = (+compHitTargets[1][0] - diffX).toString() + (+compHitTargets[1][1] - diffY).toString();
-            if (!proximityShipLocs.includes(newPos)) {
-              sameAxisNext.push(newPos);
-              compNextTargets.push(newPos);
-              bothSidesTargetPresent = false;
-            } else {
-              // ship sank
-              proximityShipLocs = proximityHandler(compHitTargets);
-              compHitTargets = [];
-              compNextTargets = [];
-              sameAxisNext = [];
-            }
-          } else if (compHitTargets.length === 3) {
-            let shipSank = true;
-            for (let i = 1; i < compHitTargets.length; i++) {
-              diffX = xIndex0 - +compHitTargets[i][0];
-              diffY = yIndex0 - +compHitTargets[i][0];
-              newPos = (+compHitTargets[i][0] - diffX).toString() + (+compHitTargets[i][1] - diffY).toString();
+            if ((newPos[0] >= 0 && newPos[0] <= 9)
+              && (newPos[1] >= 0 && newPos[1] <= 9)) {
               if (!proximityShipLocs.includes(newPos)) {
-                shipSank = false;
                 sameAxisNext.push(newPos);
                 compNextTargets.push(newPos);
-                bothSidesTargetPresent = true;
+                bothSidesTargetPresent = false;
               }
             }
-            
-            if (shipSank) {
-              // ship sank
-              proximityShipLocs = proximityHandler(compHitTargets);
-              compHitTargets = [];
-              compNextTargets = [];
-              sameAxisNext = [];
+          } else if (compHitTargets.length === 3) {
+            for (let i = 1; i < compHitTargets.length; i++) {
+              diffX = xIndex0 - +compHitTargets[i][0];
+              diffY = yIndex0 - +compHitTargets[i][1];
+              newPos = (+compHitTargets[i][0] - diffX).toString() + (+compHitTargets[i][1] - diffY).toString();
+              if ((newPos[0] >= 0 && newPos[0] <= 9)
+                && (newPos[1] >= 0 && newPos[1] <= 9)) {
+                if (!proximityShipLocs.includes(newPos)) {
+                  sameAxisNext.push(newPos);
+                  compNextTargets.push(newPos);
+                  bothSidesTargetPresent = true;
+                }
+              }
             }
           }
-        } else if (compNextTargets === 0 && sameAxisNext.length !== 0) {
+        } else if (compNextTargets.length === 0 && sameAxisNext.length !== 0) {
           // Continue adding elements which are along same axis as long as they keep hitting the ship
+          console.log("hello");
+          let diffX, diffY, newPos;
           if (bothSidesTargetPresent === false) {
-            let lastX = sameAxisNext[sameAxisNext.length - 1][0];
-            let lastY= sameAxisNext[sameAxisNext.length - 1][1];
+            let lastX = +sameAxisNext[sameAxisNext.length - 1][0];
+            let lastY= +sameAxisNext[sameAxisNext.length - 1][1];
             if (sameAxisNext[sameAxisNext.length - 1] === compHitTargets[compHitTargets.length - 1]) {
               diffX = +compHitTargets[0][0] - lastX;
               diffY = +compHitTargets[0][1] - lastY;
               if (diffX === 0) {
-                newPos = (lastX).toString() + (lastY - 1).toString();
+                if (diffY > 0) {  // if diff was positive, next loc should be on left of current one
+                  newPos = (lastX).toString() + (lastY - 1).toString();
+                } else {   // if diff was negative, next loc should be on right of current one
+                  newPos = (lastX).toString() + (lastY + 1).toString();
+                }
               } else if (diffY === 0) {
-                newPos = (lastX - 1).toString() + (lastY).toString();
+                if (diffX > 0) {
+                  newPos = (lastX - 1).toString() + (lastY).toString();
+                } else {
+                  newPos = (lastX + 1).toString() + (lastY).toString();
+                }
               }
+              console.log(compHitTargets);
+              console.log(newPos);
               if (!proximityShipLocs.includes(newPos)) {
                 sameAxisNext.push(newPos);
                 compNextTargets.push(newPos);
-              } else {
-                // ship sank
-                proximityShipLocs = proximityHandler(compHitTargets);
-                compHitTargets = [];
-                compNextTargets = [];
-                sameAxisNext = [];
               }
-            } else {
-              // ship sank
-              proximityShipLocs = proximityHandler(compHitTargets);
-              compHitTargets = [];
-              compNextTargets = [];
-              sameAxisNext = [];
             }
           } else if (bothSidesTargetPresent === true) {
-            let sank = true;
             for (let i = sameAxisNext.length - 2; i < sameAxisNext.length; i++) {
-              let lastX = sameAxisNext[i][0];
-              let lastY = sameAxisNext[i][1];
+              let lastX = +sameAxisNext[i][0];
+              let lastY = +sameAxisNext[i][1];
               if (compHitTargets.includes(sameAxisNext[i])) {
-                sank = false;
                 diffX = +compHitTargets[0][0] - lastX;
                 diffY = +compHitTargets[0][1] - lastY;
                 if (diffX === 0) {
-                  newPos = (lastX).toString() + (lastY - 1).toString();
+                  if (diffY > 0) {  // if diff was positive, next loc should be on left of current one
+                    newPos = (lastX).toString() + (lastY - 1).toString();
+                  } else {   // if diff was negative, next loc should be on right of current one
+                    newPos = (lastX).toString() + (lastY + 1).toString();
+                  }
                 } else if (diffY === 0) {
-                  newPos = (lastX - 1).toString() + (lastY).toString();
+                  if (diffX > 0) {
+                    newPos = (lastX - 1).toString() + (lastY).toString();
+                  } else {
+                    newPos = (lastX + 1).toString() + (lastY).toString();
+                  }
                 }
                 if (!proximityShipLocs.includes(newPos)) {
                   sameAxisNext.push(newPos);
                   compNextTargets.push(newPos);
                 }
               }
-            }
-            if (sank) {
-              // ship sank
-              proximityShipLocs = proximityHandler(compHitTargets);
-              compHitTargets = [];
-              compNextTargets = [];
-              sameAxisNext = [];
             }
           }
         }
@@ -217,7 +223,7 @@ async function handleComputerRound(oppGameboard, oppGameBoardObj, hitTargets, ne
   return new Promise((resolve) => {
     setTimeout(() => {
       currAttack = handleAttack(attackPos, oppGameboard, oppGameBoardObj);
-      while (currAttack === null || proximityShipLocs.includes(currAttack)) {
+      while (currAttack === null || proximityShipLocs.includes(attackPos)) {
         attackPos = Math.floor(10 * Math.random()).toString() + Math.floor(10 * Math.random()).toString();  // new attackPos
         currAttack = handleAttack(attackPos, oppGameboard, oppGameBoardObj);
       }
@@ -407,7 +413,6 @@ async function computerPlaceShips(playerObjArr) {
         pos = posX.toString() + posY.toString();
       } while ((posX < 0 || posX > 9) || (posY < 0 || posY > 9))
       shipLocation = determineShipLoc(pos, length);
-      // console.log(`length: ${length}`)
       shipPlace = computerArr.gameBoard.placeShip(shipLocation);
     } while(shipLocation === null || shipPlace === false)
   });

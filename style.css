@@ -128,12 +128,16 @@ h1 {
   font-weight: bolder;
 }
 
-.gameboards .columnDiv.attacked {
+.columnDiv.attacked {
   background-color: red;
 }
 
-.gameboards .columnDiv.missed {
+.columnDiv.missed {
   background-color: lightskyblue;
+}
+
+.columnDiv.shipSunkCell {
+  background-color: brown;
 }
 
 .gameboards .columnDiv.latest:after {
