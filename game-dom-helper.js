@@ -14,6 +14,8 @@ function disableStartingMenu() {
 
 function initGameBoard(playerArr, playerObjArr) {
   let player, playerDiv, playerNameSpan;
+  const gameboards = document.querySelector(".gameboards");
+  if (gameboards.classList.contains('hidden')) gameboards.classList.remove('hidden');
   for (let i = 0; i < playerArr.length; i++) {
     if (playerObjArr[0] !== undefined && playerObjArr[0].name === playerArr[i]) {
       player = playerObjArr[0];
@@ -30,6 +32,8 @@ function initGameBoard(playerArr, playerObjArr) {
 
 function initGameBoardForShipPlacement(playerName, playerDiv, playerObjArr) {
   let player = new Player(playerName);
+  let placeAllShips = document.querySelector(".placeAllShips");
+  if (placeAllShips.classList.contains('hidden')) placeAllShips.classList.remove('hidden');
   displayGameboard(player, playerDiv, false);
   playerObjArr.push(player);
   return playerObjArr;
@@ -40,9 +44,9 @@ function displayGameboard(player, playerDiv, playerShipsPlaced, playerNameSpan=n
   let rowDiv, columnDiv;
   if (playerShipsPlaced && player.name !== 'Computer') {
     let placeAllShips = document.querySelector(".placeAllShips");
-    let player1Board = document.querySelector(".placeAllShips .player1Board");
+    let player1Board = document.querySelector(".placeAllShips .placeShipsPlayer1Board");
     playerDiv.innerHTML = player1Board.innerHTML;
-    placeAllShips.innerHTML = '';
+    placeAllShips.classList.add('hidden');
     let neighbours = playerDiv.querySelectorAll('.neighbour');
     neighbours.forEach((neighbour) => {
       neighbour.classList.remove('neighbour');

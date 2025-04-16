@@ -6,6 +6,9 @@ const gameMode = document.querySelector('input[type="radio"]:checked');
 const gameStartBtn = document.querySelector(".gameStartBtn");
 let playerArr = [];
 let playerObjArr = [];
+const gameboards = document.querySelector(".gameboards")
+gameboards.classList.add('hidden');
+
 gameStartBtn.addEventListener("click", async () => {
   disableStartingMenu();
   playerArr.push(player.value);
@@ -18,6 +21,42 @@ gameStartBtn.addEventListener("click", async () => {
   handleTurns(playerObjArr);
 });
 
+function handleGameEnding(winner) {
+  const placeAllShips = document.querySelector('.placeAllShips');
+  const boardPlayer1 = document.querySelector('.gameboards .player1Board');
+  const namePlayer1 = document.querySelector('.gameboards .player1Name');
+  const boardPlayer2 = document.querySelector('.gameboards .player2Board');
+  const namePlayer2 = document.querySelector('.gameboards .player2Name');
+  const turnInfo = document.querySelector('.turnInfo');
+  placeAllShips.innerHTML = '';
+  boardPlayer1.innerHTML = '';
+  namePlayer1.innerHTML = '';
+  boardPlayer2.innerHTML = '';
+  namePlayer2.innerHTML = '';
+  turnInfo.innerHTML = '';
+  gameboards.classList.add('hidden');
+
+  const gameEndSection = document.querySelector(".gameEndSection");
+  const declareWinner = document.createElement("div");
+  declareWinner.classList.add('declareWinner');
+  declareWinner.innerText = `${winner.name} WON!!!`;
+  const startNewGameBtn = document.createElement('button');
+  startNewGameBtn.innerText = 'Start New Game';
+  startNewGameBtn.classList.add('startNewGameBtn');
+  gameEndSection.appendChild(declareWinner);
+  gameEndSection.appendChild(startNewGameBtn);
+
+  startNewGameBtn.addEventListener('click', () => {
+    gameEndSection.innerHTML = '';
+    let radioPvc = document.querySelector("#pvc");
+    let player = document.querySelector("#player");
+    let gameStartBtn = document.querySelector(".gameStartBtn");
+    radioPvc.removeAttribute("disabled");
+    player.removeAttribute("disabled");
+    gameStartBtn.removeAttribute("disabled");
+  });
+}
+
 
 let compHitTargets = [];
 let compNextTargets = [];
@@ -26,6 +65,11 @@ let bothSidesTargetPresent;
 let proximityShipLocs = [];
 async function handleTurns(playerObjArr, turn=1, gameEnd=false) {
   if (gameEnd === true) {
+    if ((turn - 1) % 2 === 0) {
+      handleGameEnding(playerObjArr[1]);
+    } else if ((turn - 1) % 2 !== 0) {
+      handleGameEnding(playerObjArr[0]);
+    }
     return;
   }
   const player1Board = document.querySelector('.player1Board');
@@ -33,21 +77,21 @@ async function handleTurns(playerObjArr, turn=1, gameEnd=false) {
   const turnInfo = document.querySelector('.turnInfo');
   turnInfo.innerText = '';
   if (turn % 2 === 0) {
-    // if (playerObjArr[0].gameBoard.allShipsSunk() === true) {
-    //   console.log("all ships of player1 sank");
-    //   gameEnd = true;
-    // } else {
+    if (playerObjArr[0].gameBoard.allShipsSunk() === true) {
+      console.log("all ships of player1 sank");
+      gameEnd = true;
+    } else {
       turnInfo.innerText = `${playerObjArr[0].name}'s turn`;
       if (player2Board.classList.contains("disabled")) { player2Board.classList.remove("disabled"); }
       player1Board.classList.add("disabled");
       let computerGameboard = playerObjArr[1].gameBoard;
       await handlePlayerRound(player2Board, computerGameboard);
-    // }
+    }
   } else {
-    // if (playerObjArr[1].gameBoard.allShipsSunk() === true) {
-    //   console.log("all ships of player2 sank");
-    //   gameEnd = true;
-    // } else {
+    if (playerObjArr[1].gameBoard.allShipsSunk() === true) {
+      console.log("all ships of player2 sank");
+      gameEnd = true;
+    } else {
       let playerGameboard = playerObjArr[0].gameBoard;
       turnInfo.innerText = `${playerObjArr[1].name}'s turn`;
       if (player1Board.classList.contains("disabled")) { player1Board.classList.remove("disabled"); }
@@ -171,7 +215,7 @@ async function handleTurns(playerObjArr, turn=1, gameEnd=false) {
       } else {
         await handlePlayerRound(player1Board, playerGameboard);
       }
-    // }
+    }
   }
   turn++;
   handleTurns(playerObjArr, turn, gameEnd);
@@ -216,12 +260,16 @@ async function handleComputerRound(oppGameboard, oppGameBoardObj, hitTargets, ne
   }
   return new Promise((resolve) => {
     setTimeout(() => {
-      currAttack = handleAttack(attackPos, oppGameboard, oppGameBoardObj);
-      console.log(attackPos);
-      console.log(proximityShipLocs);
-      while (currAttack === null || proximityShipLocs.includes(attackPos)) {
+      while (proximityShipLocs.includes(attackPos)) {
         attackPos = Math.floor(10 * Math.random()).toString() + Math.floor(10 * Math.random()).toString();  // new attackPos
-        currAttack = handleAttack(attackPos, oppGameboard, oppGameBoardObj);
+      }
+      currAttack = handleAttack(attackPos, oppGameboard, oppGameBoardObj);
+      while (currAttack === null) {
+        attackPos = Math.floor(10 * Math.random()).toString() + Math.floor(10 * Math.random()).toString();  // new attackPos
+        // check if new position is in proximityShipLocs
+        if (!proximityShipLocs.includes(attackPos)) {
+          currAttack = handleAttack(attackPos, oppGameboard, oppGameBoardObj);
+        }
       }
       if (currAttack === true) {
         if (nextTargets.length !== 0) {
@@ -288,18 +336,18 @@ async function playerPlaceShips(playerArr) {
   const placeAllShips = document.querySelector('.placeAllShips');
   const shipsDiv = document.createElement("div");
   shipsDiv.classList.add("ships");
-  const player1Board = document.createElement("div");
-  player1Board.classList.add("player1Board");
+  const player1board = document.createElement("div");
+  player1board.classList.add("placeShipsPlayer1Board");
   
   placeAllShips.appendChild(shipsDiv);
-  placeAllShips.appendChild(player1Board);
+  placeAllShips.appendChild(player1board);
   const launchGameBtn = document.createElement('button');
   launchGameBtn.innerText = 'Launch Game';
   launchGameBtn.classList.add("launchGameBtn");
   launchGameBtn.setAttribute("disabled", true);
   placeAllShips.appendChild(launchGameBtn);
 
-  playerObjArr = initGameBoardForShipPlacement(playerArr[0], player1Board, playerObjArr);
+  playerObjArr = initGameBoardForShipPlacement(playerArr[0], player1board, playerObjArr);
   let playerGameBoard = playerObjArr[0].gameBoard;
 
   let shipLen;
@@ -345,6 +393,7 @@ async function playerPlaceShips(playerArr) {
         for (let i = 0; i < shipLocArray.length; i++) {
           let cell = document.querySelector(`[data-loc="${shipLocArray[i]}"]`);
           cell.classList.add('shipPlaced');
+          cell.classList.remove('hovered');
         }
         let startingCell = document.querySelector(`[data-loc="${shipLocArray[0]}"]`);
         startingCell.appendChild(reqShip);
@@ -356,7 +405,6 @@ async function playerPlaceShips(playerArr) {
         let allShipPlacedCells = document.querySelectorAll('.shipPlaced');
         if (allShipPlacedCells.length === 12) {
           launchGameBtn.removeAttribute("disabled");
-          return new Promise((resolve) => resolve());
         }
       } else {
         for (let i = 0; i < shipLocArray.length; i++) {
