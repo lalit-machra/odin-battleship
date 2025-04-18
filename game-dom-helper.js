@@ -27,7 +27,7 @@ function initGameBoard(playerArr, playerObjArr) {
     playerNameSpan = document.querySelector(`.gameboards .player${i + 1}Name`);
     displayGameboard(player, playerDiv, true, playerNameSpan);
   }
-  return playerObjArr;
+  return;
 }
 
 function initGameBoardForShipPlacement(playerName, playerDiv, playerObjArr) {
@@ -36,7 +36,7 @@ function initGameBoardForShipPlacement(playerName, playerDiv, playerObjArr) {
   if (placeAllShips.classList.contains('hidden')) placeAllShips.classList.remove('hidden');
   displayGameboard(player, playerDiv, false);
   playerObjArr.push(player);
-  return playerObjArr;
+  return;
 }
 
 function displayGameboard(player, playerDiv, playerShipsPlaced, playerNameSpan=null) {

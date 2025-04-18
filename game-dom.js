@@ -4,66 +4,35 @@ import { proximityHandler } from "./game-logic.js";
 const player = document.querySelector("#player");
 const gameMode = document.querySelector('input[type="radio"]:checked');
 const gameStartBtn = document.querySelector(".gameStartBtn");
-let playerArr = [];
-let playerObjArr = [];
 const gameboards = document.querySelector(".gameboards")
 gameboards.classList.add('hidden');
 
 gameStartBtn.addEventListener("click", async () => {
+  let playerArr = [];
+  let playerObjArr = [];
   disableStartingMenu();
   playerArr.push(player.value);
-  await playerPlaceShips(playerArr);
+  await playerPlaceShips(playerArr, playerObjArr);
   if (gameMode.value === 'pvc') {
     playerArr.push("Computer");
   }
-  playerObjArr = initGameBoard(playerArr, playerObjArr);
+  initGameBoard(playerArr, playerObjArr);
   await computerPlaceShips(playerObjArr);
-  handleTurns(playerObjArr);
+  // Declare all required arrays and variables;
+  let playerHitTargets = [];
+  let bothSidesTargetPresent;
+  let proximityShipLocs = [];
+  let compHitTargets = [];
+  let compNextTargets = [];
+  let sameAxisNext = [];
+  handleTurns(playerObjArr, playerHitTargets,
+    bothSidesTargetPresent, proximityShipLocs,
+    compHitTargets, compNextTargets, sameAxisNext);
 });
 
-function handleGameEnding(winner) {
-  const placeAllShips = document.querySelector('.placeAllShips');
-  const boardPlayer1 = document.querySelector('.gameboards .player1Board');
-  const namePlayer1 = document.querySelector('.gameboards .player1Name');
-  const boardPlayer2 = document.querySelector('.gameboards .player2Board');
-  const namePlayer2 = document.querySelector('.gameboards .player2Name');
-  const turnInfo = document.querySelector('.turnInfo');
-  placeAllShips.innerHTML = '';
-  boardPlayer1.innerHTML = '';
-  namePlayer1.innerHTML = '';
-  boardPlayer2.innerHTML = '';
-  namePlayer2.innerHTML = '';
-  turnInfo.innerHTML = '';
-  gameboards.classList.add('hidden');
-
-  const gameEndSection = document.querySelector(".gameEndSection");
-  const declareWinner = document.createElement("div");
-  declareWinner.classList.add('declareWinner');
-  declareWinner.innerText = `${winner.name} WON!!!`;
-  const startNewGameBtn = document.createElement('button');
-  startNewGameBtn.innerText = 'Start New Game';
-  startNewGameBtn.classList.add('startNewGameBtn');
-  gameEndSection.appendChild(declareWinner);
-  gameEndSection.appendChild(startNewGameBtn);
-
-  startNewGameBtn.addEventListener('click', () => {
-    gameEndSection.innerHTML = '';
-    let radioPvc = document.querySelector("#pvc");
-    let player = document.querySelector("#player");
-    let gameStartBtn = document.querySelector(".gameStartBtn");
-    radioPvc.removeAttribute("disabled");
-    player.removeAttribute("disabled");
-    gameStartBtn.removeAttribute("disabled");
-  });
-}
-
-
-let compHitTargets = [];
-let compNextTargets = [];
-let sameAxisNext = [];
-let bothSidesTargetPresent;
-let proximityShipLocs = [];
-async function handleTurns(playerObjArr, turn=1, gameEnd=false) {
+async function handleTurns(playerObjArr, playerHitTargets,
+    bothSidesTargetPresent, proximityShipLocs, compHitTargets,
+    compNextTargets, sameAxisNext, turn=1, gameEnd=false) {
   if (gameEnd === true) {
     if ((turn - 1) % 2 === 0) {
       handleGameEnding(playerObjArr[1]);
@@ -78,18 +47,18 @@ async function handleTurns(playerObjArr, turn=1, gameEnd=false) {
   turnInfo.innerText = '';
   if (turn % 2 === 0) {
     if (playerObjArr[0].gameBoard.allShipsSunk() === true) {
-      console.log("all ships of player1 sank");
+      // all ships of player1 sank
       gameEnd = true;
     } else {
       turnInfo.innerText = `${playerObjArr[0].name}'s turn`;
       if (player2Board.classList.contains("disabled")) { player2Board.classList.remove("disabled"); }
       player1Board.classList.add("disabled");
       let computerGameboard = playerObjArr[1].gameBoard;
-      await handlePlayerRound(player2Board, computerGameboard);
+      await handlePlayerRound(player2Board, computerGameboard, playerHitTargets);
     }
   } else {
     if (playerObjArr[1].gameBoard.allShipsSunk() === true) {
-      console.log("all ships of player2 sank");
+      // all ships of player2 sank
       gameEnd = true;
     } else {
       let playerGameboard = playerObjArr[0].gameBoard;
@@ -211,18 +180,19 @@ async function handleTurns(playerObjArr, turn=1, gameEnd=false) {
           }
         }
 
-        await handleComputerRound(player1Board, playerGameboard, compHitTargets, compNextTargets, proximityShipLocs);
+        await handleComputerRound(player1Board, playerGameboard, compHitTargets, compNextTargets, sameAxisNext, proximityShipLocs);
       } else {
         await handlePlayerRound(player1Board, playerGameboard);
       }
     }
   }
   turn++;
-  handleTurns(playerObjArr, turn, gameEnd);
+  handleTurns(playerObjArr, playerHitTargets,
+    bothSidesTargetPresent, proximityShipLocs, compHitTargets,
+    compNextTargets, sameAxisNext, turn, gameEnd);
 }
 
-let playerHitTargets = [];
-async function handlePlayerRound(oppGameboard, oppGameBoardObj) {
+async function handlePlayerRound(oppGameboard, oppGameBoardObj, playerHitTargets) {
   let attackPos, shipSunkStatus;
   let clicked = false;
   return new Promise((resolve) => oppGameboard.onclick = (e) => {
@@ -241,7 +211,7 @@ async function handlePlayerRound(oppGameboard, oppGameBoardObj) {
                 sunkShipCell = oppGameboard.querySelector(`[data-loc="${playerHitTargets[i]}"]`);
                 sunkShipCell.classList.add("shipSunkCell");
               }
-              playerHitTargets = [];
+              playerHitTargets.splice(0, playerHitTargets.length);
             }
           }
           setTimeout(() => resolve(), 500);
@@ -251,7 +221,7 @@ async function handlePlayerRound(oppGameboard, oppGameBoardObj) {
   });
 }
 
-async function handleComputerRound(oppGameboard, oppGameBoardObj, hitTargets, nextTargets, proximityShipLocs) {
+async function handleComputerRound(oppGameboard, oppGameBoardObj, hitTargets, nextTargets, sameAxisNext, proximityShipLocs) {
   let attackPos, currAttack;
   if (nextTargets.length === 0) {
     attackPos = Math.floor(10 * Math.random()).toString() + Math.floor(10 * Math.random()).toString();
@@ -261,11 +231,19 @@ async function handleComputerRound(oppGameboard, oppGameBoardObj, hitTargets, ne
   return new Promise((resolve) => {
     setTimeout(() => {
       while (proximityShipLocs.includes(attackPos)) {
-        attackPos = Math.floor(10 * Math.random()).toString() + Math.floor(10 * Math.random()).toString();  // new attackPos
+        if (hitTargets.length !== 0) {
+          attackPos = nextTargets.shift();
+        } else {
+          attackPos = Math.floor(10 * Math.random()).toString() + Math.floor(10 * Math.random()).toString();  // new attackPos
+        }
       }
       currAttack = handleAttack(attackPos, oppGameboard, oppGameBoardObj);
       while (currAttack === null) {
-        attackPos = Math.floor(10 * Math.random()).toString() + Math.floor(10 * Math.random()).toString();  // new attackPos
+        if (hitTargets.length !== 0) {
+          attackPos = nextTargets.shift();
+        } else {
+          attackPos = Math.floor(10 * Math.random()).toString() + Math.floor(10 * Math.random()).toString();  // new attackPos
+        }
         // check if new position is in proximityShipLocs
         if (!proximityShipLocs.includes(attackPos)) {
           currAttack = handleAttack(attackPos, oppGameboard, oppGameBoardObj);
@@ -332,7 +310,7 @@ function handleAttack(attackPos, oppGameboard, oppGameBoardObj) {
   }
 }
 
-async function playerPlaceShips(playerArr) {
+async function playerPlaceShips(playerArr, playerObjArr) {
   const placeAllShips = document.querySelector('.placeAllShips');
   const shipsDiv = document.createElement("div");
   shipsDiv.classList.add("ships");
@@ -347,7 +325,7 @@ async function playerPlaceShips(playerArr) {
   launchGameBtn.setAttribute("disabled", true);
   placeAllShips.appendChild(launchGameBtn);
 
-  playerObjArr = initGameBoardForShipPlacement(playerArr[0], player1board, playerObjArr);
+  initGameBoardForShipPlacement(playerArr[0], player1board, playerObjArr);
   let playerGameBoard = playerObjArr[0].gameBoard;
 
   let shipLen;
@@ -478,4 +456,41 @@ async function computerPlaceShips(playerObjArr) {
   });
   console.log(`Ship Position: ${computerArr.gameBoard.shipLocations}`);
   return new Promise((resolve) => resolve());
+}
+
+
+function handleGameEnding(winner) {
+  const placeAllShips = document.querySelector('.placeAllShips');
+  const boardPlayer1 = document.querySelector('.gameboards .player1Board');
+  const namePlayer1 = document.querySelector('.gameboards .player1Name');
+  const boardPlayer2 = document.querySelector('.gameboards .player2Board');
+  const namePlayer2 = document.querySelector('.gameboards .player2Name');
+  const turnInfo = document.querySelector('.turnInfo');
+  placeAllShips.innerHTML = '';
+  boardPlayer1.innerHTML = '';
+  namePlayer1.innerHTML = '';
+  boardPlayer2.innerHTML = '';
+  namePlayer2.innerHTML = '';
+  turnInfo.innerHTML = '';
+  gameboards.classList.add('hidden');
+
+  const gameEndSection = document.querySelector(".gameEndSection");
+  const declareWinner = document.createElement("div");
+  declareWinner.classList.add('declareWinner');
+  declareWinner.innerText = `${winner.name} WON!!!`;
+  const startNewGameBtn = document.createElement('button');
+  startNewGameBtn.innerText = 'Start New Game';
+  startNewGameBtn.classList.add('startNewGameBtn');
+  gameEndSection.appendChild(declareWinner);
+  gameEndSection.appendChild(startNewGameBtn);
+
+  startNewGameBtn.addEventListener('click', () => {
+    gameEndSection.innerHTML = '';
+    let radioPvc = document.querySelector("#pvc");
+    let player = document.querySelector("#player");
+    let gameStartBtn = document.querySelector(".gameStartBtn");
+    radioPvc.removeAttribute("disabled");
+    player.removeAttribute("disabled");
+    gameStartBtn.removeAttribute("disabled");
+  });
 }
